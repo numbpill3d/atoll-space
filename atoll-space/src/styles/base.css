@@ -1,0 +1,197 @@
+/* ─────────────────────────────────────────────
+   atoll.space — base.css
+   resets · css variables · typography
+───────────────────────────────────────────── */
+
+@import url('https://fonts.googleapis.com/css2?family=VT323&family=Share+Tech+Mono&display=swap');
+
+:root {
+  /* palette — monochrome only, always */
+  --ink:        #1a1a1a;
+  --ink-dim:    #555555;
+  --ink-ghost:  #aaaaaa;
+  --paper:      #f5f4f0;
+  --paper-2:    #edecea;
+  --paper-3:    #e0dfda;
+  --water:      #f5f4f0;
+
+  /* sinking opacity levels */
+  --opacity-alive:  1.0;
+  --opacity-fading: 0.5;
+  --opacity-ghost:  0.15;
+
+  /* type */
+  --font-display: 'VT323', monospace;
+  --font-mono:    'Share Tech Mono', monospace;
+
+  /* spacing */
+  --bar-h:  36px;
+  --sbar-h: 24px;
+
+  /* transitions */
+  --t-fast: 80ms;
+  --t-mid:  150ms;
+}
+
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html, body {
+  height: 100%;
+  overflow: hidden;
+}
+
+body {
+  background: var(--paper);
+  color: var(--ink);
+  font-family: var(--font-mono);
+  font-size: 13px;
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+}
+
+#app {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+/* scanline overlay — always present */
+#app::after {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background: repeating-linear-gradient(
+    0deg,
+    transparent,
+    transparent 3px,
+    rgba(0,0,0,0.018) 3px,
+    rgba(0,0,0,0.018) 4px
+  );
+  pointer-events: none;
+  z-index: 9999;
+}
+
+/* ── typography ── */
+
+h1 {
+  font-family: var(--font-display);
+  font-size: 28px;
+  font-weight: normal;
+  letter-spacing: 0.05em;
+  margin-bottom: 0.75rem;
+}
+
+h2 {
+  font-family: var(--font-display);
+  font-size: 20px;
+  font-weight: normal;
+  letter-spacing: 0.05em;
+  margin: 1.25rem 0 0.5rem;
+}
+
+p {
+  margin-bottom: 0.75rem;
+  color: var(--ink-dim);
+}
+
+a {
+  color: var(--ink);
+  text-decoration: none;
+  border-bottom: 1px solid var(--ink-ghost);
+  transition: border-color var(--t-fast), color var(--t-fast);
+}
+
+a:hover {
+  border-bottom-color: var(--ink);
+}
+
+ul {
+  list-style: none;
+  padding: 0;
+}
+
+ul li {
+  padding: 2px 0;
+  color: var(--ink-dim);
+  font-size: 12px;
+  letter-spacing: 0.05em;
+}
+
+ul li::before {
+  content: '— ';
+  color: var(--ink-ghost);
+}
+
+.mono {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--ink);
+  background: var(--paper-2);
+  padding: 1px 4px;
+  border: 1px solid var(--paper-3);
+}
+
+/* ── buttons ── */
+
+.btn-primary {
+  font-family: var(--font-display);
+  font-size: 16px;
+  letter-spacing: 0.1em;
+  background: var(--ink);
+  color: var(--paper);
+  border: none;
+  padding: 5px 16px;
+  cursor: pointer;
+  transition: background var(--t-fast);
+  white-space: nowrap;
+}
+
+.btn-primary:hover { background: #444; }
+
+.btn-ghost {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.1em;
+  background: none;
+  color: var(--ink-ghost);
+  border: 1px solid var(--paper-3);
+  padding: 4px 10px;
+  cursor: pointer;
+  transition: color var(--t-fast), border-color var(--t-fast);
+}
+
+.btn-ghost:hover {
+  color: var(--ink);
+  border-color: var(--ink-dim);
+}
+
+/* ── views ── */
+
+.view { display: none; }
+.view.active { display: block; }
+.hidden { display: none !important; }
+
+/* ── scrollbar ── */
+
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: var(--paper-2); }
+::-webkit-scrollbar-thumb {
+  background: var(--paper-3);
+  border: 1px solid var(--ink-ghost);
+}
+::-webkit-scrollbar-thumb:hover { background: var(--ink-ghost); }
+
+/* ── prose container (about view) ── */
+
+.prose-container {
+  max-width: 520px;
+  margin: 60px auto;
+  padding: 0 24px;
+  overflow-y: auto;
+  max-height: calc(100vh - var(--bar-h) - var(--sbar-h) - 24px);
+}

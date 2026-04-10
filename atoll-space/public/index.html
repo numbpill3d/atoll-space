@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>atoll.space — the floating archipelago</title>
+  <meta name="description" content="Every user is a tiny isometric island in a vast digital ocean." />
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=VT323&family=Share+Tech+Mono&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/src/styles/base.css" />
+  <link rel="stylesheet" href="/src/styles/map.css" />
+  <link rel="stylesheet" href="/src/styles/ui.css" />
+</head>
+<body>
+
+  <div id="app">
+
+    <!-- top navigation -->
+    <header id="top-bar">
+      <div class="logo">ATOLL.SPACE</div>
+      <nav>
+        <a href="#map" class="nav-link active" data-view="map">MAP</a>
+        <a href="#island" class="nav-link" data-view="island">YOURS</a>
+        <a href="#nearby" class="nav-link" data-view="nearby">NEARBY</a>
+        <a href="#about" class="nav-link" data-view="about">ABOUT</a>
+      </nav>
+      <div class="tagline">the floating archipelago</div>
+    </header>
+
+    <!-- ocean map -->
+    <main id="map-view" class="view active">
+      <div id="map-area">
+        <canvas id="ocean-canvas"></canvas>
+        <svg id="node-layer" xmlns="http://www.w3.org/2000/svg"></svg>
+        <svg id="conn-layer" xmlns="http://www.w3.org/2000/svg"></svg>
+      </div>
+    </main>
+
+    <!-- your island view -->
+    <section id="island-view" class="view hidden">
+      <div id="island-shell">
+        <div id="island-header">
+          <span id="island-name-display">---</span>
+          <button id="drop-trigger" class="btn-primary">[ DROP ]</button>
+        </div>
+        <div id="island-drops-list"></div>
+      </div>
+    </section>
+
+    <!-- about view -->
+    <section id="about-view" class="view hidden">
+      <div class="prose-container">
+        <h1>atoll.space</h1>
+        <p>a social website shaped like an ocean.</p>
+        <p>you are an island. you drop things. the ocean arranges itself around what you share.</p>
+        <h2>rules</h2>
+        <ul>
+          <li>one island per person</li>
+          <li>one active drop at a time</li>
+          <li>no replies, no likes, no feed</li>
+          <li>islands drift toward shared tags</li>
+          <li>silence makes you sink</li>
+        </ul>
+        <h2>node types</h2>
+        <ul>
+          <li><span class="mono">□</span> link — a url you want to share</li>
+          <li><span class="mono">○</span> thought — a sentence or two, nothing more</li>
+          <li><span class="mono">✦</span> flower — a 16x16 pixel-art image</li>
+          <li><span class="mono">▷</span> image — a small monochrome image</li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- status bar -->
+    <footer id="status-bar">
+      <span id="s-coords">0, 0</span>
+      <span class="sep">|</span>
+      <span id="s-count">-- islands</span>
+      <span class="sep">|</span>
+      <span id="s-hover">--</span>
+      <span class="sep">|</span>
+      <span id="s-auth">not signed in</span>
+    </footer>
+
+    <!-- minimap -->
+    <div id="minimap">
+      <canvas id="minimap-canvas" width="90" height="60"></canvas>
+    </div>
+
+    <!-- drop button (map view shortcut) -->
+    <button id="drop-btn-map" class="drop-fab">[ DROP ]</button>
+
+    <!-- tooltip -->
+    <div id="tooltip" class="tooltip" aria-hidden="true">
+      <div class="tt-type" id="tt-type"></div>
+      <div class="tt-label" id="tt-label"></div>
+    </div>
+
+    <!-- node popup -->
+    <div id="popup-overlay" role="dialog" aria-modal="true" aria-hidden="true">
+      <div id="popup">
+        <div id="popup-header">
+          <span id="popup-title">NODE</span>
+          <button id="popup-close" aria-label="close">x</button>
+        </div>
+        <div id="popup-body">
+          <div class="pop-meta" id="pop-meta"></div>
+          <div class="pop-content" id="pop-content"></div>
+          <div class="pop-link-wrap" id="pop-link-wrap" hidden>
+            <a id="pop-link" href="#" target="_blank" rel="noopener noreferrer">open link</a>
+          </div>
+          <div class="pop-tags" id="pop-tags"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- drop form overlay -->
+    <div id="drop-overlay" role="dialog" aria-modal="true" aria-hidden="true">
+      <div id="drop-form-panel">
+        <div id="drop-form-header">
+          <span>NEW DROP</span>
+          <button id="drop-form-close" aria-label="close">x</button>
+        </div>
+        <form id="drop-form" novalidate>
+          <div class="field">
+            <label class="field-label">TYPE</label>
+            <div class="type-selector">
+              <button type="button" class="type-btn active" data-type="link">□ LINK</button>
+              <button type="button" class="type-btn" data-type="thought">○ THOUGHT</button>
+              <button type="button" class="type-btn" data-type="flower">✦ FLOWER</button>
+            </div>
+          </div>
+          <div class="field" id="field-url">
+            <label class="field-label" for="input-url">URL</label>
+            <input id="input-url" type="url" placeholder="https://" autocomplete="off" />
+          </div>
+          <div class="field" id="field-content">
+            <label class="field-label" for="input-content">CONTENT</label>
+            <textarea id="input-content" maxlength="280" placeholder="a thought, max 280 chars" rows="3"></textarea>
+            <span class="char-count" id="char-count">0 / 280</span>
+          </div>
+          <div class="field">
+            <label class="field-label" for="input-tags">TAGS <span class="field-hint">(space separated)</span></label>
+            <input id="input-tags" type="text" placeholder="design art thought" autocomplete="off" />
+          </div>
+          <div class="form-actions">
+            <button type="submit" class="btn-primary">DROP IT</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- auth overlay -->
+    <div id="auth-overlay" role="dialog" aria-modal="true">
+      <div id="auth-panel">
+        <div class="auth-title">ATOLL.SPACE</div>
+        <div class="auth-sub">to claim an island, enter your email.<br>we'll send a link. no password.</div>
+        <form id="auth-form" novalidate>
+          <input id="auth-email" type="email" placeholder="your@email.com" autocomplete="email" />
+          <input id="auth-island-name" type="text" placeholder="island name (one word)" maxlength="24" autocomplete="off" />
+          <button type="submit" class="btn-primary">SEND LINK</button>
+        </form>
+        <div class="auth-hint" id="auth-hint"></div>
+        <button class="btn-ghost" id="auth-explore">explore as guest</button>
+      </div>
+    </div>
+
+  </div>
+
+  <script type="module" src="/src/main.js"></script>
+</body>
+</html>

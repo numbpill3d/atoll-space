@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="32" height="32">
+  <!-- 1-bit isometric island favicon -->
+  <rect width="32" height="32" fill="#f5f4f0"/>
+  <!-- top face (diamond) -->
+  <polygon points="16,6 26,11 16,16 6,11" fill="#c4c3bd" stroke="#1a1a1a" stroke-width="0.8"/>
+  <!-- left face -->
+  <polygon points="6,11 16,16 16,22 6,17" fill="#a8a7a1" stroke="#1a1a1a" stroke-width="0.8"/>
+  <!-- right face -->
+  <polygon points="16,16 26,11 26,17 16,22" fill="#bab9b3" stroke="#1a1a1a" stroke-width="0.8"/>
+  <!-- node dot -->
+  <rect x="14" y="8" width="4" height="4" fill="#1a1a1a"/>
+</svg>
