@@ -4,10 +4,10 @@
 
 import { createClient } from '@supabase/supabase-js';
 
-const SUPABASE_URL  = import.meta.env?.VITE_SUPABASE_URL  || 'https://placeholder.supabase.co';
-const SUPABASE_ANON = import.meta.env?.VITE_SUPABASE_ANON || 'placeholder-anon-key';
+const SUPABASE_URL  = __SUPABASE_URL__  || 'https://placeholder.supabase.co';
+const SUPABASE_ANON = __SUPABASE_ANON__ || 'placeholder-anon-key';
 
-if (SUPABASE_URL === 'https://placeholder.supabase.co') {
+if (!__SUPABASE_URL__) {
   console.warn('[atoll] supabase env vars not set — running in demo mode (no backend)');
 }
 
