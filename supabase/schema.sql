@@ -137,3 +137,20 @@ for each row execute function handle_new_user();
 create index if not exists drops_island_id_idx on drops(island_id);
 create index if not exists drops_tags_idx      on drops using gin(tags);
 create index if not exists islands_label_idx   on islands(label);
+
+-- ── drift cron job (run AFTER deploying the edge function) ───
+-- enables pg_cron and schedules the drift tick every hour.
+-- replace <project-ref> with your Supabase project reference id.
+--
+-- create extension if not exists pg_cron;
+--
+-- select cron.schedule(
+--   'drift-tick',
+--   '0 * * * *',
+--   $$
+--     select net.http_post(
+--       url    := 'https://<project-ref>.supabase.co/functions/v1/drift',
+--       headers := '{"Authorization": "Bearer <service-role-key>"}'::jsonb
+--     );
+--   $$
+-- );
