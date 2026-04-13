@@ -2,7 +2,7 @@
  * db.js — supabase client singleton
  */
 
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
+import { createClient } from '@supabase/supabase-js';
 
 const SUPABASE_URL  = import.meta.env?.VITE_SUPABASE_URL  ?? '';
 const SUPABASE_ANON = import.meta.env?.VITE_SUPABASE_ANON ?? '';

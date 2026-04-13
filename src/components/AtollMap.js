@@ -7,8 +7,7 @@
 
 import { Island }      from './Island.js';
 import { NodeDot }     from './NodeDot.js';
-import { Tooltip }     from './Tooltip.js';
-import { Popup }       from './Popup.js';
+import { Tooltip, Popup } from './ui-components.js';
 import { islandStore } from '../store/islands.js';
 import { dropStore }   from '../store/drops.js';
 
@@ -106,7 +105,7 @@ export class AtollMap {
       dot.appendTo(this.nodeLayer, {
         onHover: (x, y, d) => this.tooltip.show(x, y, d),
         onLeave: ()          => this.tooltip.hide(),
-        onClick: (d)         => this.popup.open(d),
+        onClick: (d)         => this.popup.open({ ...d, _islandLabel: island.label }),
       });
     });
   }
@@ -183,6 +182,15 @@ export class AtollMap {
       el.style.animationDelay = rp.delay + 's';
       this.mapArea.appendChild(el);
     });
+  }
+
+  /** pan the map so (worldX, worldY) is centred in the viewport */
+  panTo(worldX, worldY) {
+    const { width: W, height: H } = this.canvas;
+    this.pan.x = Math.round(W / 2 - worldX);
+    this.pan.y = Math.round(H / 2 - worldY);
+    this._clampPan();
+    this.render();
   }
 
   // ── helpers ───────────────────────────────

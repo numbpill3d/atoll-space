@@ -21,10 +21,10 @@
     <header id="top-bar">
       <div class="logo">ATOLL.SPACE</div>
       <nav>
-        <a href="#map" class="nav-link active" data-view="map">MAP</a>
-        <a href="#island" class="nav-link" data-view="island">YOURS</a>
-        <a href="#nearby" class="nav-link" data-view="nearby">NEARBY</a>
-        <a href="#about" class="nav-link" data-view="about">ABOUT</a>
+        <a href="#map"    class="nav-link active" data-view="map">MAP</a>
+        <a href="#island" class="nav-link"         data-view="island">YOURS</a>
+        <a href="#nearby" class="nav-link"         data-view="nearby">NEARBY</a>
+        <a href="#about"  class="nav-link"         data-view="about">ABOUT</a>
       </nav>
       <div class="tagline">the floating archipelago</div>
     </header>
@@ -42,10 +42,21 @@
     <section id="island-view" class="view hidden">
       <div id="island-shell">
         <div id="island-header">
-          <span id="island-name-display">---</span>
+          <div class="island-header-left">
+            <span id="island-name-display">---</span>
+            <span id="island-sink-status" class="island-sink-badge"></span>
+          </div>
           <button id="drop-trigger" class="btn-primary">[ DROP ]</button>
         </div>
         <div id="island-drops-list"></div>
+      </div>
+    </section>
+
+    <!-- nearby islands view -->
+    <section id="nearby-view" class="view hidden">
+      <div id="nearby-shell">
+        <div id="nearby-header">NEARBY ISLANDS</div>
+        <div id="nearby-list"></div>
       </div>
     </section>
 
@@ -67,8 +78,15 @@
         <ul>
           <li><span class="mono">□</span> link — a url you want to share</li>
           <li><span class="mono">○</span> thought — a sentence or two, nothing more</li>
-          <li><span class="mono">✦</span> flower — a 16x16 pixel-art image</li>
+          <li><span class="mono">✦</span> flower — a 16x16 pixel-art image you draw</li>
           <li><span class="mono">▷</span> image — a small monochrome image</li>
+        </ul>
+        <h2>sinking</h2>
+        <ul>
+          <li>0–29 days — alive (full presence)</li>
+          <li>30–59 days — fading (half opacity)</li>
+          <li>60–89 days — ghost (barely visible)</li>
+          <li>90+ days — archived, removed from map</li>
         </ul>
       </div>
     </section>
@@ -82,6 +100,7 @@
       <span id="s-hover">--</span>
       <span class="sep">|</span>
       <span id="s-auth">not signed in</span>
+      <button id="auth-signout" class="btn-ghost sbar-signout" style="display:none">sign out</button>
     </footer>
 
     <!-- minimap -->
@@ -103,10 +122,12 @@
       <div id="popup">
         <div id="popup-header">
           <span id="popup-title">NODE</span>
+          <span id="pop-island" class="pop-island-label"></span>
           <button id="popup-close" aria-label="close">x</button>
         </div>
         <div id="popup-body">
-          <div class="pop-meta" id="pop-meta"></div>
+          <div class="pop-meta"    id="pop-meta"></div>
+          <div class="pop-pixel"   id="pop-pixel"></div>
           <div class="pop-content" id="pop-content"></div>
           <div class="pop-link-wrap" id="pop-link-wrap" hidden>
             <a id="pop-link" href="#" target="_blank" rel="noopener noreferrer">open link</a>
@@ -141,6 +162,9 @@
             <textarea id="input-content" maxlength="280" placeholder="a thought, max 280 chars" rows="3"></textarea>
             <span class="char-count" id="char-count">0 / 280</span>
           </div>
+          <div class="field" id="field-pixel" style="display:none">
+            <label class="field-label">DRAW YOUR FLOWER <span class="field-hint">(16×16)</span></label>
+          </div>
           <div class="field">
             <label class="field-label" for="input-tags">TAGS <span class="field-hint">(space separated)</span></label>
             <input id="input-tags" type="text" placeholder="design art thought" autocomplete="off" />
@@ -148,6 +172,7 @@
           <div class="form-actions">
             <button type="submit" class="btn-primary">DROP IT</button>
           </div>
+          <div class="drop-form-hint" id="drop-form-hint"></div>
         </form>
       </div>
     </div>

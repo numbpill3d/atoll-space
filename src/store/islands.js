@@ -57,6 +57,22 @@ class IslandStore {
   getById(id)      { return this._islands.find(i => i.id === id) ?? null; }
   getAdjacencies() { return this._adjacencies; }
 
+  /** subscribe to realtime island position updates from drift ticks */
+  subscribe(onUpdate) {
+    db.channel('island-drift')
+      .on('postgres_changes', {
+        event: 'UPDATE', schema: 'public', table: 'islands',
+      }, payload => {
+        const idx = this._islands.findIndex(i => i.id === payload.new.id);
+        if (idx !== -1) {
+          this._islands[idx].x = payload.new.x;
+          this._islands[idx].y = payload.new.y;
+          onUpdate();
+        }
+      })
+      .subscribe();
+  }
+
   /** returns centroid positions for tag clusters (for map labels) */
   getTagClusters() {
     const tagMap = {};
