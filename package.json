@@ -4,13 +4,13 @@
   "description": "the floating archipelago — a spatial social web",
   "type": "module",
   "scripts": {
-    "dev":   "vite",
+    "dev": "vite",
     "build": "vite build",
     "preview": "vite preview",
     "drift": "node src/utils/drift.js"
   },
   "dependencies": {
-    "@supabase/supabase-js": "^2.39.0"
+    "@supabase/supabase-js": "^2.103.0"
   },
   "devDependencies": {
     "vite": "^5.0.0"
