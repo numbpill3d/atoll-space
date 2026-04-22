@@ -1,14 +1,30 @@
 /**
- * db.js — supabase client singleton
+ * db.js — Firebase app init
+ * exports `db` (Firestore) and `auth` (Firebase Auth)
  */
 
-import { createClient } from '@supabase/supabase-js';
+import { initializeApp } from 'firebase/app';
+import { getFirestore }  from 'firebase/firestore';
+import { getAuth }       from 'firebase/auth';
 
-const SUPABASE_URL  = __SUPABASE_URL__  || 'https://placeholder.supabase.co';
-const SUPABASE_ANON = __SUPABASE_ANON__ || 'placeholder-anon-key';
+const firebaseConfig = {
+  apiKey:            import.meta.env.VITE_FIREBASE_API_KEY,
+  authDomain:        import.meta.env.VITE_FIREBASE_AUTH_DOMAIN,
+  projectId:         import.meta.env.VITE_FIREBASE_PROJECT_ID,
+  storageBucket:     import.meta.env.VITE_FIREBASE_STORAGE_BUCKET,
+  messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID,
+  appId:             import.meta.env.VITE_FIREBASE_APP_ID,
+};
 
-if (!__SUPABASE_URL__) {
-  console.warn('[atoll] supabase env vars not set — running in demo mode (no backend)');
+const missingKeys = Object.entries(firebaseConfig)
+  .filter(([, v]) => !v)
+  .map(([k]) => k);
+
+if (missingKeys.length) {
+  console.warn('[atoll] missing Firebase env vars:', missingKeys.join(', '), '— running in demo mode');
 }
 
-export const db = createClient(SUPABASE_URL, SUPABASE_ANON);
+const app = initializeApp(firebaseConfig);
+
+export const db   = getFirestore(app);
+export const auth = getAuth(app);

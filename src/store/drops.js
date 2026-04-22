@@ -3,6 +3,10 @@
  */
 
 import { db } from '../utils/db.js';
+import { session } from './session.js';
+import {
+  collection, addDoc, updateDoc, doc, serverTimestamp,
+} from 'firebase/firestore';
 
 class DropStore {
   constructor() {
@@ -13,7 +17,7 @@ class DropStore {
   seed(drops) {
     this._drops = drops.map(d => ({
       ...d,
-      dropped_ago: _relativeTime(d.created_at),
+      dropped_ago: _relativeTime(d.created_at?.toDate?.() ?? d.created_at),
     }));
   }
 
@@ -22,45 +26,45 @@ class DropStore {
   getByIsland(id) { return this._drops.filter(d => d.island_id === id); }
 
   async create(payload) {
-    const { data: { user } } = await db.auth.getUser();
+    const user = session.user;
     if (!user) throw new Error('not authenticated');
+    if (!user.island_id) throw new Error('no island found');
 
-    const { data: island } = await db
-      .from('islands')
-      .select('id')
-      .eq('user_id', user.id)
-      .single();
+    const islandRef  = doc(db, 'islands', user.island_id);
+    const dropsRef   = collection(db, 'islands', user.island_id, 'drops');
 
-    if (!island) throw new Error('no island found');
+    const docRef = await addDoc(dropsRef, {
+      type:      payload.type,
+      label:     payload.label ?? payload.content?.slice(0, 60) ?? '',
+      content:   payload.content ?? null,
+      url:       payload.url ?? null,
+      tags:      payload.tags ?? [],
+      offset_x:  _randomOffset(),
+      offset_y:  _randomOffset(),
+      created_at: serverTimestamp(),
+    });
 
-    const { data, error } = await db
-      .from('drops')
-      .insert({
-        island_id: island.id,
-        type:      payload.type,
-        label:     payload.label ?? payload.content?.slice(0, 60) ?? '',
-        content:   payload.content,
-        url:       payload.url,
-        tags:      payload.tags ?? [],
-        offset_x:  _randomOffset(),
-        offset_y:  _randomOffset(),
-      })
-      .select()
-      .single();
+    await updateDoc(islandRef, { last_drop_at: serverTimestamp() });
 
-    if (error) throw error;
+    const newDrop = {
+      id:         docRef.id,
+      island_id:  user.island_id,
+      type:       payload.type,
+      label:      payload.label ?? payload.content?.slice(0, 60) ?? '',
+      content:    payload.content ?? null,
+      url:        payload.url ?? null,
+      tags:       payload.tags ?? [],
+      dropped_ago: 'just now',
+    };
 
-    await db.from('islands').update({ last_drop_at: new Date().toISOString() })
-      .eq('id', island.id);
-
-    this._drops.push({ ...data, island_id: island.id, dropped_ago: 'just now' });
-    return data;
+    this._drops.push(newDrop);
+    return newDrop;
   }
 }
 
-function _relativeTime(iso) {
-  if (!iso) return '';
-  const ms   = Date.now() - new Date(iso).getTime();
+function _relativeTime(date) {
+  if (!date) return '';
+  const ms   = Date.now() - new Date(date).getTime();
   const mins = Math.floor(ms / 60000);
   if (mins < 2)    return 'just now';
   if (mins < 60)   return mins + 'm ago';

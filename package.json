@@ -10,7 +10,7 @@
     "drift": "node src/utils/drift.js"
   },
   "dependencies": {
-    "@supabase/supabase-js": "^2.103.0"
+    "firebase": "^10.8.0"
   },
   "devDependencies": {
     "vite": "^5.0.0"
