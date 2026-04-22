@@ -1,12 +1,11 @@
 /**
- * session.js — Firebase Auth session (email magic link)
+ * session.js — Firebase Auth session (email + password)
  */
 
 import { auth, db } from '../utils/db.js';
 import {
-  sendSignInLinkToEmail,
-  isSignInWithEmailLink,
-  signInWithEmailLink,
+  createUserWithEmailAndPassword,
+  signInWithEmailAndPassword,
   onAuthStateChanged,
   signOut,
 } from 'firebase/auth';
@@ -15,30 +14,12 @@ import {
   addDoc, serverTimestamp,
 } from 'firebase/firestore';
 
-const LS_EMAIL       = 'atoll_sign_in_email';
-const LS_ISLAND_NAME = 'atoll_island_name';
-
 class Session {
   constructor() {
     this.user = null;
   }
 
   async init() {
-    // Complete email link sign-in if we're on a redirect URL
-    if (isSignInWithEmailLink(auth, window.location.href)) {
-      const email      = localStorage.getItem(LS_EMAIL) || window.prompt('confirm your email address');
-      const islandName = localStorage.getItem(LS_ISLAND_NAME) || 'island';
-      try {
-        const result = await signInWithEmailLink(auth, email, window.location.href);
-        localStorage.removeItem(LS_EMAIL);
-        localStorage.removeItem(LS_ISLAND_NAME);
-        await this._ensureIsland(result.user, islandName);
-        window.history.replaceState({}, document.title, window.location.pathname);
-      } catch (e) {
-        console.error('[session] email link sign-in failed', e);
-      }
-    }
-
     return new Promise(resolve => {
       const unsub = onAuthStateChanged(auth, async fbUser => {
         unsub();
@@ -55,18 +36,38 @@ class Session {
     });
   }
 
-  async sendMagicLink(email, islandName) {
-    localStorage.setItem(LS_EMAIL, email);
-    if (islandName) localStorage.setItem(LS_ISLAND_NAME, islandName);
+  async signIn(email, password, islandName) {
     try {
-      await sendSignInLinkToEmail(auth, email, {
-        url: window.location.origin,
-        handleCodeInApp: true,
-      });
+      const result = await signInWithEmailAndPassword(auth, email, password);
+      await this._loadUser(result.user);
+      return { error: null };
+    } catch (e) {
+      if (e.code === 'auth/user-not-found' || e.code === 'auth/invalid-credential') {
+        return this._register(email, password, islandName);
+      }
+      return { error: e };
+    }
+  }
+
+  async _register(email, password, islandName) {
+    try {
+      const result = await createUserWithEmailAndPassword(auth, email, password);
+      await this._ensureIsland(result.user, islandName || 'island');
+      await this._loadUser(result.user);
       return { error: null };
     } catch (e) {
       return { error: e };
     }
+  }
+
+  async _loadUser(fbUser) {
+    const island = await this._getIsland(fbUser.uid);
+    this.user = {
+      uid:          fbUser.uid,
+      email:        fbUser.email,
+      island_id:    island?.id    ?? null,
+      island_label: island?.label ?? null,
+    };
   }
 
   async signOut() {

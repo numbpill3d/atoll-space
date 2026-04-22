@@ -181,11 +181,12 @@
     <div id="auth-overlay" role="dialog" aria-modal="true">
       <div id="auth-panel">
         <div class="auth-title">ATOLL.SPACE</div>
-        <div class="auth-sub">to claim an island, enter your email.<br>we'll send a link. no password.</div>
+        <div class="auth-sub">sign in or create an island.</div>
         <form id="auth-form" novalidate>
           <input id="auth-email" type="email" placeholder="your@email.com" autocomplete="email" />
-          <input id="auth-island-name" type="text" placeholder="island name (one word)" maxlength="24" autocomplete="off" />
-          <button type="submit" class="btn-primary">SEND LINK</button>
+          <input id="auth-password" type="password" placeholder="password" autocomplete="current-password" />
+          <input id="auth-island-name" type="text" placeholder="island name — new accounts only" maxlength="24" autocomplete="off" />
+          <button type="submit" class="btn-primary">ENTER</button>
         </form>
         <div class="auth-hint" id="auth-hint"></div>
         <button class="btn-ghost" id="auth-explore">explore as guest</button>

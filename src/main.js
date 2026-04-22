@@ -77,13 +77,18 @@ document.getElementById('auth-explore').addEventListener('click', () => {
 
 document.getElementById('auth-form').addEventListener('submit', async e => {
   e.preventDefault();
-  const email = document.getElementById('auth-email').value.trim();
-  const name  = document.getElementById('auth-island-name').value.trim();
-  const hint  = document.getElementById('auth-hint');
-  if (!email) return;
-  hint.textContent = 'sending magic link...';
-  const { error } = await session.sendMagicLink(email, name);
-  hint.textContent = error ? 'something went wrong. try again.' : 'check your email — link sent.';
+  const email    = document.getElementById('auth-email').value.trim();
+  const password = document.getElementById('auth-password').value;
+  const name     = document.getElementById('auth-island-name').value.trim();
+  const hint     = document.getElementById('auth-hint');
+  if (!email || !password) return;
+  hint.textContent = 'signing in...';
+  const { error } = await session.signIn(email, password, name);
+  if (error) {
+    hint.textContent = error.code === 'auth/wrong-password' ? 'wrong password.' : 'something went wrong. try again.';
+  } else {
+    _onSignedIn(session.user);
+  }
 });
 
 document.getElementById('auth-signout')?.addEventListener('click', async () => {
