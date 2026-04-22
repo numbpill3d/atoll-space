@@ -1,0 +1,38 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    match /islands/{islandId} {
+      // anyone can read islands (public map)
+      allow read: if true;
+
+      // only the owner can create their own island
+      allow create: if request.auth != null
+        && request.resource.data.user_id == request.auth.uid
+        && request.resource.data.keys().hasAll(['user_id', 'label', 'x', 'y', 'size', 'created_at']);
+
+      // owner can update position/sinking fields; cannot change user_id
+      allow update: if request.auth != null
+        && resource.data.user_id == request.auth.uid
+        && request.resource.data.user_id == request.auth.uid;
+
+      // no deletes
+      allow delete: if false;
+
+      match /drops/{dropId} {
+        // anyone can read drops (shown on public map)
+        allow read: if true;
+
+        // only the island owner can add drops
+        allow create: if request.auth != null
+          && get(/databases/$(database)/documents/islands/$(islandId)).data.user_id == request.auth.uid
+          && request.resource.data.keys().hasAll(['type', 'label', 'created_at']);
+
+        // drops are immutable once created
+        allow update, delete: if false;
+      }
+    }
+
+  }
+}
