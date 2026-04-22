@@ -52,27 +52,33 @@ function openDropOrAuth() {
 document.getElementById('drop-btn-map').addEventListener('click', openDropOrAuth);
 document.getElementById('drop-trigger')?.addEventListener('click', openDropOrAuth);
 
+// ── map bootstrap (runs immediately, independent of auth) ────
+
+let _mapLoaded = false;
+
+async function _loadMap() {
+  if (_mapLoaded) return;
+  _mapLoaded = true;
+  try {
+    await islandStore.loadPublic();
+  } catch (e) {
+    console.error('[atoll] loadPublic failed', e);
+  }
+  map.render();
+  minimap.render(map.pan);
+  _wireRealtimeDrift();
+}
+
+_loadMap();
+
 // ── auth flow ────────────────────────────────
 
 session.init().then(user => {
-  if (user) {
-    _onSignedIn(user);
-  }
-  // load map whether signed in or not
-  islandStore.loadPublic().then(() => {
-    map.render();
-    minimap.render(map.pan);
-    _wireRealtimeDrift();
-  });
-});
+  if (user) _onSignedIn(user);
+}).catch(e => console.error('[atoll] session init failed', e));
 
 document.getElementById('auth-explore').addEventListener('click', () => {
   document.getElementById('auth-overlay').classList.add('dismissed');
-  islandStore.loadPublic().then(() => {
-    map.render();
-    minimap.render(map.pan);
-    _wireRealtimeDrift();
-  });
 });
 
 document.getElementById('auth-form').addEventListener('submit', async e => {
@@ -85,7 +91,10 @@ document.getElementById('auth-form').addEventListener('submit', async e => {
   hint.textContent = 'signing in...';
   const { error } = await session.signIn(email, password, name);
   if (error) {
-    hint.textContent = error.code === 'auth/wrong-password' ? 'wrong password.' : 'something went wrong. try again.';
+    const msg = error.code === 'auth/wrong-password' || error.code === 'auth/invalid-credential'
+      ? 'wrong password.'
+      : (error.message ?? 'something went wrong. try again.');
+    hint.textContent = msg;
   } else {
     _onSignedIn(session.user);
   }
