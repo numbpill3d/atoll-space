@@ -1,26 +1,19 @@
-import { defineConfig, loadEnv } from 'vite';
+import { defineConfig } from 'vite';
 
-export default defineConfig(({ mode }) => {
-  const env = loadEnv(mode, process.cwd(), '');
-  return {
-    root: 'public',
-    publicDir: false,
-    define: {
-      __SUPABASE_URL__:  JSON.stringify(env.SUPABASE_URL  || ''),
-      __SUPABASE_ANON__: JSON.stringify(env.SUPABASE_ANON || ''),
+export default defineConfig({
+  root: 'public',
+  publicDir: false,
+  build: {
+    outDir: '../dist',
+    emptyOutDir: true,
+  },
+  server: {
+    port: 3000,
+    open: true,
+  },
+  resolve: {
+    alias: {
+      '/src': new URL('./src', import.meta.url).pathname,
     },
-    build: {
-      outDir: '../dist',
-      emptyOutDir: true,
-    },
-    server: {
-      port: 3000,
-      open: true,
-    },
-    resolve: {
-      alias: {
-        '/src': new URL('./src', import.meta.url).pathname,
-      },
-    },
-  };
+  },
 });
