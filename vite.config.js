@@ -3,6 +3,7 @@ import { defineConfig } from 'vite';
 export default defineConfig({
   root: 'public',
   publicDir: false,
+  envDir: new URL('.', import.meta.url).pathname,
   build: {
     outDir: '../dist',
     emptyOutDir: true,
